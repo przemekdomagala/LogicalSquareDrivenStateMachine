@@ -1,5 +1,6 @@
 from .predicate import Predicate
 
+#NOTE: Klasa definiująca obiekt kwadratu logicznego
 class SquareOfOpposition:
     def __init__(self, predicates: list[Predicate]):
         self._predicates = predicates
@@ -10,9 +11,8 @@ class SquareOfOpposition:
         self._contrary = self.__filter_predicates("contrary_to_initial")
         self._contradictory = self.__filter_predicates("contradictory_to_initial")
         self._subalternate = self.__filter_predicates("subalternate_to_initial")
-
-        return
     
+    #NOTE: Metoda zwracająca predykat o konkretnej relacji względem predykatu początkowego
     def __filter_predicates(self, parameter: str) -> Predicate:
         predicate = [predicate for predicate in self._predicates if getattr(predicate, parameter)]
         if predicate:

@@ -1,6 +1,7 @@
 from typing import List
 from .predicate import Predicate
 
+#NOTE: Klasa odpowiedzialna za przyjęcie inputu i stworzenie predykatów
 class InputHandler:
     def _get_predicates(self) -> List[Predicate]:
         A, E, I, O = "", "", "", ""

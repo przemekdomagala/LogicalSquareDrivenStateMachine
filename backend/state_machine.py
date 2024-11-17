@@ -1,5 +1,6 @@
 from .states_identifier import StatesIdentifier
 
+#NOTE: Klasa definiująca obiekt maszyny stanów
 class StateMachine:
     def __init__(self, square_of_opposition):
         state_identifier = StatesIdentifier()

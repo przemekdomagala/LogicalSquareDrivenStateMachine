@@ -1,5 +1,6 @@
 from enum import Enum
 
+#NOTE: Enum z wszystkimi możliwymi typami kwadratow
 class StatesVariant(Enum):
     INITIAL_ONLY = 1
     INITIAL_CONTRADICTORY = 2

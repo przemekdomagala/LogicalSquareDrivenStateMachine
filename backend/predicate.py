@@ -1,3 +1,4 @@
+#NOTE: Klasa definiująca obiekt predykatu
 class Predicate:
     def __init__(self, name: str, contrary_to_initial: bool = False, contradictory_to_initial: bool = False, 
                  subalternate_to_initial: bool = False):

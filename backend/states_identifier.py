@@ -3,8 +3,10 @@ from .states_variant import StatesVariant
 from .state import State
 from typing import List
 
+#NOTE: Klasa odpowiedzialna za idenfikację stanów na podstawie kwadratu logicznego
 class StatesIdentifier:
     
+    #NOTE: Identifikacja stanów na podstawie kwadratu logicznego
     def _idenfity_states(self, square_of_opposition: SquareOfOpposition) -> List[State]:
         state_variant = self.__identify_states_variant(square_of_opposition)
 
@@ -37,6 +39,7 @@ class StatesIdentifier:
             case _:
                 return []
     
+    #NOTE: Metoda identyfikująca z jakim wariantem kwadratu mamy do czynienia
     def __identify_states_variant(self, square_of_opposition: SquareOfOpposition) -> StatesVariant:
         if None not in square_of_opposition._predicates:
             return StatesVariant.ALL_PREDICATES
