@@ -50,12 +50,12 @@ class StatesIdentifier:
 
         if not subalternate:
             if not contradictory and not contrary:
-                return StatesVariant.INITIAL_CONTRARY
+                return StatesVariant.INITIAL_ONLY
             if not contrary:
                 return StatesVariant.INITIAL_CONTRADICTORY
             if not contradictory:
-                return StatesVariant.INITIAL_CONTRARY_CONTRADICTORY
-            return StatesVariant.INITIAL_ONLY
+                return StatesVariant.INITIAL_CONTRARY
+            return StatesVariant.INITIAL_CONTRARY_CONTRADICTORY
 
         if not contradictory:
             if not contrary:
