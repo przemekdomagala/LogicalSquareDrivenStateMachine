@@ -16,7 +16,7 @@ class SquareScreen(Screen):
         layout = FloatLayout()
 
         instructions = Label(
-            text="Wypełnij tekst w rogach kwadratu:\n(Lewy górny róg musi być pierwszy!)",
+            text="Fill square's corners with predicates:\nLeft top corner predicate is initial, must always be filled!",
             font_size=20,
             color=(1, 1, 1, 1),
             size_hint=(1, 0.1),
@@ -60,7 +60,7 @@ class SquareScreen(Screen):
         )
 
         back_button = Button(
-            text="Wstecz",
+            text="Back",
             size_hint=(0.4, 1),
             background_color=(0.8, 0.1, 0.1, 1),
             color=(1, 1, 1, 1),
@@ -69,7 +69,7 @@ class SquareScreen(Screen):
         button_layout.add_widget(back_button)
 
         next_button = Button(
-            text="Dalej",
+            text="Next",
             size_hint=(0.4, 1),
             background_color=(0.1, 0.8, 0.1, 1),
             color=(1, 1, 1, 1),
@@ -99,7 +99,7 @@ class SquareScreen(Screen):
         if self.inputs[0].text.strip() == "":
             popup = Popup(
                 title="Błąd",
-                content=Label(text="Lewy górny róg musi być wypełniony!"),
+                content=Label(text="Left top corner must always be filled!"),
                 size_hint=(0.6, 0.4),
             )
             popup.open()

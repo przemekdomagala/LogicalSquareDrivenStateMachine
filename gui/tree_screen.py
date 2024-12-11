@@ -9,6 +9,7 @@ from kivy.uix.floatlayout import FloatLayout
 from generate_code_screen import GenerateCodeScreen
 from state_chosen_screen import StateChosenScreen
 from kivy.uix.spinner import Spinner
+from backend.code_generator import CodeGenerator
 
 class TreeScreen(Screen):
     def __init__(self, tree_data, **kwargs):
@@ -43,7 +44,7 @@ class TreeScreen(Screen):
 
         # Back button
         back_button = Button(
-            text="Wstecz",
+            text="Back",
             size_hint=(0.3, 1),
             background_color=(0.8, 0.1, 0.1, 1),
             color=(1, 1, 1, 1),
@@ -63,7 +64,7 @@ class TreeScreen(Screen):
 
         # Next button
         next_button = Button(
-            text="Dalej",
+            text="Next",
             size_hint=(0.3, 1),
             background_color=(0.1, 0.8, 0.1, 1),
             color=(1, 1, 1, 1),
@@ -91,15 +92,18 @@ class TreeScreen(Screen):
         if "generate_code" not in self.manager.screen_names:
             self.manager.add_widget(GenerateCodeScreen(name="generate_code"))
         self.manager.current = "generate_code"
+        code_generator = CodeGenerator()
+        code_generator.generate_code(self.tree_data)
 
-
+    #region drawtree
     def draw_tree(self, *args):
         """Draw the tree structure with root and its descendants."""
         self.drawing_area.canvas.clear()
         with self.drawing_area.canvas:
             screen_width, screen_height = self.size
             root_x = screen_width / 2
-            root_y = screen_height * 0.7
+            # root_y = screen_height * 0.7
+            root_y = screen_height * 0.9
 
             Color(1, 1, 1, 1)  # White color for the root
             self.draw_circle(root_x, root_y, 50, "root") 
@@ -185,7 +189,7 @@ class TreeScreen(Screen):
         if "state_chosen" in self.manager.screen_names:
             self.manager.remove_widget(self.manager.get_screen("state_chosen"))
         self.manager.add_widget(state_screen)
-        self.expand_button.disabled = True
+        # self.expand_button.disabled = True
 
         self.manager.current = "state_chosen"
     def open_expand_popup(self, instance):
@@ -217,15 +221,20 @@ class TreeScreen(Screen):
             error_popup.open()
             return
 
+        for i in range(len(available_leaves)):
+            if type(available_leaves[i]) == str:
+                continue
+            available_leaves[i] = available_leaves[i].name
+
         spinner = Spinner(
-            text="Select a leaf",
+            text="Select state",
             values=available_leaves,
             size_hint=(1, None),
             height=40,
         )
 
         selected_label = Label(
-            text="No leaf selected",
+            text="No state selected",
             size_hint=(1, None),
             height=40,
             color=(1, 1, 1, 1),
@@ -237,7 +246,7 @@ class TreeScreen(Screen):
 
         spinner.bind(text=on_spinner_select)
 
-        popup_layout.add_widget(Label(text="Choose a leaf to expand:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+        popup_layout.add_widget(Label(text="Choose state to expand:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
         popup_layout.add_widget(spinner)
         popup_layout.add_widget(selected_label)
 

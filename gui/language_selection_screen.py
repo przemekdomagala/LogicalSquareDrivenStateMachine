@@ -11,7 +11,7 @@ class LanguageSelectionScreen(Screen):
         layout = BoxLayout(orientation="vertical", padding=20, spacing=20)
 
         label = Label(
-            text="Wybierz język:",
+            text="Choose language for code generation:",
             font_size=24,
             color=(1, 1, 1, 1),
             size_hint=(1, 0.2),
@@ -28,7 +28,7 @@ class LanguageSelectionScreen(Screen):
             self.dropdown.add_widget(btn)
 
         self.language_button = Button(
-            text="Wybierz...",
+            text="Choose here...",
             size_hint=(1, 0.2),
             background_color=(0.2, 0.6, 0.8, 1),
             color=(1, 1, 1, 1),
@@ -40,7 +40,7 @@ class LanguageSelectionScreen(Screen):
         layout.add_widget(self.language_button)
 
         next_button = Button(
-            text="Dalej",
+            text="Next",
             size_hint=(1, 0.2),
             background_color=(0.4, 0.8, 0.2, 1),
             color=(1, 1, 1, 1),
@@ -54,12 +54,13 @@ class LanguageSelectionScreen(Screen):
         self.language_button.text = selected_language
 
     def go_to_next(self, instance):
-        if self.language_button.text != "Wybierz...":
+        if self.language_button.text != "Choose here...":
             self.manager.current = "square_screen"
         else:
             error_popup = Popup(
-                title="Błąd",
-                content=Label(text="Proszę wybrać język!"),
+                title="Error",
+                content=Label(text="Please select a language!"),
                 size_hint=(0.6, 0.4),
             )
             error_popup.open()
+
