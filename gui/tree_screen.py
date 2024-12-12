@@ -15,25 +15,22 @@ class TreeScreen(Screen):
     def __init__(self, tree_data, **kwargs):
         super(TreeScreen, self).__init__(**kwargs)
 
-        self.tree_data = tree_data  # The dictionary representing the tree
+        self.tree_data = tree_data  
         self.selected_leaves = []  
-        self.expanded_states = []  # Track expanded states
+        self.expanded_states = []  
 
         layout = FloatLayout()
 
-        # Background
         background = Widget()
         with background.canvas:
-            Color(0.1, 0.1, 0.2, 1)  # Dark blue background
+            Color(0.1, 0.1, 0.2, 1)
             Rectangle(size=self.size, pos=self.pos)
         layout.add_widget(background)
 
-        # Drawing area for the tree
         self.drawing_area = Widget()
         layout.add_widget(self.drawing_area)
-        self.bind(size=self.draw_tree, pos=self.draw_tree)  # Redraw tree on resize or move
+        self.bind(size=self.draw_tree, pos=self.draw_tree)  
 
-        # Bottom button layout
         button_layout = BoxLayout(
             orientation="horizontal",
             size_hint=(1, 0.1),
@@ -42,7 +39,6 @@ class TreeScreen(Screen):
             padding=[20, 10],
         )
 
-        # Back button
         back_button = Button(
             text="Back",
             size_hint=(0.3, 1),
@@ -52,7 +48,6 @@ class TreeScreen(Screen):
         back_button.bind(on_release=self.go_back)
         button_layout.add_widget(back_button)
 
-        # Expand button
         self.expand_button = Button(
             text="Expand",
             size_hint=(0.3, 1),
@@ -62,7 +57,6 @@ class TreeScreen(Screen):
         self.expand_button.bind(on_release=self.open_expand_popup)
         button_layout.add_widget(self.expand_button)
 
-        # Next button
         next_button = Button(
             text="Next",
             size_hint=(0.3, 1),
@@ -72,7 +66,6 @@ class TreeScreen(Screen):
         next_button.bind(on_release=self.go_next)
         button_layout.add_widget(next_button)
 
-        # Generate Code button
         generate_code_button = Button(
             text="Generate Code",
             size_hint=(0.3, 1),
@@ -102,33 +95,28 @@ class TreeScreen(Screen):
         with self.drawing_area.canvas:
             screen_width, screen_height = self.size
             root_x = screen_width / 2
-            # root_y = screen_height * 0.7
             root_y = screen_height * 0.9
 
-            Color(1, 1, 1, 1)  # White color for the root
+            Color(1, 1, 1, 1)  
             self.draw_circle(root_x, root_y, 50, "root") 
 
-            # Recursively draw children
             def draw_children(parent_x, parent_y, children, level=1):
                 if not children:
                     return
                 
                 num_children = len(children)
                 child_spacing = screen_width / (num_children + 1)
-                child_y = parent_y - screen_height * 0.2  # Adjust vertical spacing
+                child_y = parent_y - screen_height * 0.2  
 
                 for i, (child_name, grand_children) in enumerate(children.items()):
                     child_x = (i + 1) * child_spacing
                     color = (0.2, 0.8, 0.2, 1) if child_name in self.selected_leaves else (0.2, 0.6, 0.8, 1)
                     self.draw_circle(child_x, child_y, 50, child_name, color)
 
-                    # Draw a line connecting the parent to the child
                     Line(points=[parent_x, parent_y - 50, child_x, child_y + 50], width=2)
 
-                    # Recursively draw grandchildren
                     draw_children(child_x, child_y, grand_children, level + 1)
 
-            # Start drawing from root's children
             draw_children(root_x, root_y, self.tree_data["root"])
 
     def draw_circle(self, x, y, radius, text, color=(0.2, 0.6, 0.8, 1)):
@@ -136,7 +124,6 @@ class TreeScreen(Screen):
         Color(*color)
         Line(circle=(x, y, radius), width=3)
 
-        # Text inside the circle
         Color(1, 1, 1, 1) 
         if(type(text) != str):
             text = text.name
@@ -159,7 +146,7 @@ class TreeScreen(Screen):
         """Update selected leaves based on dropdown selection."""
         if selected_state not in self.expanded_states and selected_state != "Select a state": 
             self.selected_leaves = [selected_state]
-            self.expanded_states.append(selected_state)  # Mark state as expanded
+            self.expanded_states.append(selected_state)  
         else:
             popup.dismiss()
             return
@@ -189,7 +176,6 @@ class TreeScreen(Screen):
         if "state_chosen" in self.manager.screen_names:
             self.manager.remove_widget(self.manager.get_screen("state_chosen"))
         self.manager.add_widget(state_screen)
-        # self.expand_button.disabled = True
 
         self.manager.current = "state_chosen"
     def open_expand_popup(self, instance):
@@ -197,22 +183,19 @@ class TreeScreen(Screen):
         popup_layout = BoxLayout(orientation="vertical", spacing=10, padding=20, size_hint=(1, None))
         popup_layout.bind(minimum_height=popup_layout.setter('height'))
 
-        # Filter out expanded states and collect all unexpanded leaves
         def collect_unexpanded_leaves(tree, expanded):
             """Recursively find unexpanded leaves."""
             leaves = []
             for key, children in tree.items():
-                if not children and key not in expanded:  # Collect leaves without children
+                if not children and key not in expanded:  
                     leaves.append(key)
-                elif children:  # Traverse children if they exist
+                elif children:  
                     leaves.extend(collect_unexpanded_leaves(children, expanded))
             return leaves
 
-        # Collect all unexpanded leaves
         available_leaves = collect_unexpanded_leaves(self.tree_data["root"], self.expanded_states)
 
         if not available_leaves:
-            # Show a message if no leaves are available for expansion
             error_popup = Popup(
                 title="No Leaves Available",
                 content=Label(text="All leaves have been expanded or have no children!"),

@@ -6,9 +6,6 @@ from square_screen import SquareScreen
 
 Window.clearcolor = (0.1, 0.1, 0.2, 1)
 
-#TODO: Extract states from GUI
-#TODO: Code generation of state machine, with states but without transitions for the time being
-
 class MainApp(App):
     def build(self):
         self.title = "State Machine Generator"

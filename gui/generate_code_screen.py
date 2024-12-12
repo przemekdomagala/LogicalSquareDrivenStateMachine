@@ -12,7 +12,6 @@ class GenerateCodeScreen(Screen):
 
         layout = BoxLayout(orientation="vertical", padding=20, spacing=10)
 
-        # Label to display instructions
         label = Label(
             text="Generate your code here!",
             font_size=24,
@@ -23,7 +22,6 @@ class GenerateCodeScreen(Screen):
         )
         layout.add_widget(label)
 
-        # Buttons layout
         button_layout = BoxLayout(orientation="horizontal", size_hint=(1, 0.2), spacing=20)
         back_button = Button(text="Back", size_hint=(0.5, 1))
         back_button.bind(on_release=self.go_back)
@@ -37,10 +35,9 @@ class GenerateCodeScreen(Screen):
         self.add_widget(layout)
 
     def go_back(self, instance):
-        self.manager.current = "tree_screen"  # Navigate back to TreeScreen
+        self.manager.current = "tree_screen"  
 
     def generate_code(self, instance):
-        # Logic for generating code (placeholder)
         popup = Popup(
             title="Code Generated",
             content=Label(text="Your code has been generated!"),

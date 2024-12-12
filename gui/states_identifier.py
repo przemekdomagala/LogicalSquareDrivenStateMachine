@@ -53,15 +53,9 @@ class StatesIdentifier:
     
     #NOTE: Metoda identyfikująca z jakim wariantem kwadratu mamy do czynienia
     def __identify_states_variant(self, leaves: List[str]) -> StatesVariant:
-        # if None not in square_of_opposition._predicates:
-        #     return StatesVariant.ALL_PREDICATES
         pass
         if '' not in leaves:
             return StatesVariant.ALL_PREDICATES
-
-        # subalternate = leaves[1]
-        # contradictory = leaves[2]
-        # contrary = leaves[3]
 
         subalternate = leaves[2]
         contradictory = leaves[3]

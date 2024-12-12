@@ -105,21 +105,18 @@ class SquareScreen(Screen):
             popup.open()
             return
 
-        # Gather input from the text boxes
         leaves = [input_box.text.strip() for input_box in self.inputs]
 
-        # Identify states and construct the tree data as a dictionary
         states_identifier = StatesIdentifier()
         states = states_identifier._idenfity_states(leaves)
         root = {
-            "root": {state.name: {} for state in states}  # Each state starts as a key with an empty dictionary for potential children
+            "root": {state.name: {} for state in states}  
         }
 
-        # Pass the dictionary to TreeScreen instead of a list
         if "tree_screen" in self.manager.screen_names:
             self.manager.remove_widget(self.manager.get_screen("tree_screen"))
 
-        tree_screen = TreeScreen(tree_data=root, name="tree_screen")  # Pass `tree_data`
+        tree_screen = TreeScreen(tree_data=root, name="tree_screen")  
         self.manager.add_widget(tree_screen)
 
         self.manager.current = "tree_screen"

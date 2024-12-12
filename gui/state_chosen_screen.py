@@ -17,7 +17,6 @@ class StateChosenScreen(Screen):
 
         layout = FloatLayout()
 
-        # Instructions
         instructions = Label(
             text=f"State chosen to expand: {self.state_name}\n(Left top corner must always be filled!)",
             font_size=20,
@@ -30,7 +29,6 @@ class StateChosenScreen(Screen):
         square_widget = SquareWidget(size_hint=(1, 0.8), pos_hint={"x": 0, "y": 0.1})
         layout.add_widget(square_widget)
 
-        # Input fields layout
         square_layout = FloatLayout(size_hint=(1, 0.8), pos_hint={"x": 0, "y": 0.1})
         positions = [
             {"x": 0.1, "top": 0.9},
@@ -47,14 +45,13 @@ class StateChosenScreen(Screen):
                 background_color=(0.2, 0.2, 0.4, 1),
                 foreground_color=(1, 1, 1, 1),
             )
-            if i == 0:  # Top-left corner
+            if i == 0:  
                 input_box.bind(text=self.check_top_left)
             self.inputs.append(input_box)
             square_layout.add_widget(input_box)
 
         layout.add_widget(square_layout)
 
-        # Button layout
         button_layout = BoxLayout(
             orientation="horizontal",
             size_hint=(1, 0.1),
@@ -91,7 +88,6 @@ class StateChosenScreen(Screen):
 
     def save_and_update_tree(self, instance):
         """Save the new square's leaves and update the tree on `TreeScreen`."""
-        # Check if the top-left corner is filled
         if self.inputs[0].text.strip() == "":
             popup = Popup(
                 title="Error",
@@ -101,37 +97,20 @@ class StateChosenScreen(Screen):
             popup.open()
             return
 
-        # Process the new leaves (only include non-empty ones)
         new_leaves = [input_box.text.strip() for input_box in self.inputs]
         state_identifier = StatesIdentifier()
         new_leaves = state_identifier._idenfity_states(new_leaves)
 
-        # Get the TreeScreen instance
         tree_screen = self.manager.get_screen("tree_screen")
-
-        # Update tree_data to include the new leaves
-        # current_state = tree_screen.tree_data["root"].get(self.state_name, {})
-        # for leaf in new_leaves:
-        #     current_state[leaf.name] = {}  # Add the new leaf with an empty dictionary as its children
 
         data = tree_screen.tree_data
         target_key = self.state_name
 
         def nest_value_in_key(data, target_key, new_value):
-            """
-            Nests a new value inside the dictionary at the specified target key.
-            If the key does not exist, creates the nested structure.
-
-            :param data: The dictionary to search and update
-            :param target_key: The key in which the value should be nested
-            :param new_value: The value to nest inside the key
-            :return: None (updates the dictionary in place)
-            """
             def recursive_search_and_update(data):
                 if isinstance(data, dict):
                     for key, value in data.items():
                         if key == target_key:
-                            # If key exists, ensure it's a dictionary and nest the new value
                             if not isinstance(value, dict):
                                 data[key] = {}
                             data[key].update(new_value)
@@ -141,16 +120,13 @@ class StateChosenScreen(Screen):
                                 return True
                 return False
 
-            # Start searching for the key; if not found, create it as a nested structure
             if not recursive_search_and_update(data):
-                # If the key doesn't exist, create a new nested structure at the top level
                 data[target_key] = new_value
 
         
         nest_value_in_key(data["root"], target_key, {leaf.name: {} for leaf in new_leaves})
 
-        # tree_screen.tree_data["root"][self.state_name] = current_state  # Update the tree_data
-        tree_screen.draw_tree()  # Redraw the tree with updated data
+        tree_screen.draw_tree()  
 
         self.manager.current = "tree_screen"
 
