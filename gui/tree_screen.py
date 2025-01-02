@@ -9,6 +9,7 @@ from kivy.uix.floatlayout import FloatLayout
 from generate_code_screen import GenerateCodeScreen
 from state_chosen_screen import StateChosenScreen
 from kivy.uix.spinner import Spinner
+from kivy.uix.textinput import TextInput
 from backend.code_generator import CodeGenerator
 
 class TreeScreen(Screen):
@@ -56,6 +57,17 @@ class TreeScreen(Screen):
         )
         self.expand_button.bind(on_release=self.open_expand_popup)
         button_layout.add_widget(self.expand_button)
+
+        #
+        self.rename_button = Button(
+        text="Rename",
+        size_hint=(0.3, 1),
+        background_color=(0.5, 0.3, 0.8, 1),
+        color=(1, 1, 1, 1)
+        )
+        self.rename_button.bind(on_release=self.open_rename_popup)
+        button_layout.add_widget(self.rename_button)
+        #
 
         next_button = Button(
             text="Next",
@@ -249,3 +261,183 @@ class TreeScreen(Screen):
 
         popup = Popup(title="Expand Leaves", content=main_layout, size_hint=(0.8, 0.6), auto_dismiss=False)
         popup.open()
+
+    def open_rename_popup(self, instance):
+        """Open a popup to rename a selected state."""
+        popup_layout = BoxLayout(orientation="vertical", spacing=10, padding=20, size_hint=(1, None))
+        popup_layout.bind(minimum_height=popup_layout.setter('height'))
+
+        # Collect all states available for renaming
+        def collect_all_states(tree):
+            """Recursively collect all states."""
+            states = []
+            for key, children in tree.items():
+                states.append(key)
+                if children:
+                    states.extend(collect_all_states(children))
+            return states
+
+        available_states = collect_all_states(self.tree_data["root"])
+
+        if not available_states:
+            error_popup = Popup(
+                title="No States Available",
+                content=Label(text="No states available for renaming!"),
+                size_hint=(0.6, 0.4),
+            )
+            error_popup.open()
+            return
+
+        # Spinner to select the state
+        spinner = Spinner(
+            text="Select state",
+            values=available_states,
+            size_hint=(1, None),
+            height=40,
+        )
+
+        selected_label = Label(
+            text="No state selected",
+            size_hint=(1, None),
+            height=40,
+            color=(1, 1, 1, 1),
+        )
+
+        def on_spinner_select(spinner, value):
+            """Update the label when a selection is made."""
+            selected_label.text = f"Selected: {value}"
+
+        spinner.bind(text=on_spinner_select)
+
+        # Text input for the new name
+        rename_input = TextInput(
+            hint_text="Enter new name",
+            multiline=False,
+            size_hint=(1, None),
+            height=40,
+        )
+
+        # Popup layout
+        popup_layout.add_widget(Label(text="Choose state to rename:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+        popup_layout.add_widget(spinner)
+        popup_layout.add_widget(Label(text="Enter new name:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+        popup_layout.add_widget(rename_input)
+        popup_layout.add_widget(selected_label)
+
+        # Buttons for Confirm and Cancel
+        button_layout = BoxLayout(orientation="horizontal", size_hint_y=None, height=40, spacing=20)
+        confirm_button = Button(text="Confirm", size_hint_x=0.5)
+        cancel_button = Button(text="Cancel", size_hint_x=0.5)
+
+        confirm_button.bind(on_release=lambda x: self.confirm_rename_selection(popup, spinner.text, rename_input.text))
+        cancel_button.bind(on_release=lambda x: popup.dismiss())
+
+        button_layout.add_widget(confirm_button)
+        button_layout.add_widget(cancel_button)
+
+        main_layout = BoxLayout(orientation="vertical")
+        main_layout.add_widget(popup_layout)
+        main_layout.add_widget(button_layout)
+
+        popup = Popup(title="Rename State", content=main_layout, size_hint=(0.8, 0.6), auto_dismiss=False)
+        popup.open()
+
+    # def confirm_rename_selection(self, popup, state_to_rename, new_name):
+    #     """Handle the renaming process."""
+    #     if not state_to_rename or state_to_rename == "Select state":
+    #         error_popup = Popup(
+    #             title="Invalid Selection",
+    #             content=Label(text="Please select a state to rename."),
+    #             size_hint=(0.6, 0.4),
+    #         )
+    #         error_popup.open()
+    #         return
+
+    #     if not new_name.strip():
+    #         error_popup = Popup(
+    #             title="Invalid Name",
+    #             content=Label(text="New name cannot be empty."),
+    #             size_hint=(0.6, 0.4),
+    #         )
+    #         error_popup.open()
+    #         return
+
+    #     # Rename the state in the tree data
+    #     def rename_state(tree, target, new_name):
+    #         """Recursively rename the state in the tree."""
+    #         for key, children in list(tree.items()):
+    #             if key == target:
+    #                 tree[new_name] = tree.pop(key)  # Rename the key
+    #                 return True
+    #             elif children:
+    #                 if rename_state(children, target, new_name):
+    #                     return True
+    #         return False
+
+    #     if rename_state(self.tree_data["root"], state_to_rename, new_name):
+    #         popup.dismiss()
+    #         success_popup = Popup(
+    #             title="Rename Successful",
+    #             content=Label(text=f"State '{state_to_rename}' has been renamed to '{new_name}'."),
+    #             size_hint=(0.6, 0.4),
+    #         )
+    #         success_popup.open()
+    #     else:
+    #         error_popup = Popup(
+    #             title="Rename Failed",
+    #             content=Label(text="Failed to rename the selected state."),
+    #             size_hint=(0.6, 0.4),
+    #         )
+    #         error_popup.open()
+
+    def confirm_rename_selection(self, popup, state_to_rename, new_name):
+        """Handle the renaming process."""
+        if not state_to_rename or state_to_rename == "Select state":
+            error_popup = Popup(
+                title="Invalid Selection",
+                content=Label(text="Please select a state to rename."),
+                size_hint=(0.6, 0.4),
+            )
+            error_popup.open()
+            return
+    
+        if not new_name.strip():
+            error_popup = Popup(
+                title="Invalid Name",
+                content=Label(text="New name cannot be empty."),
+                size_hint=(0.6, 0.4),
+            )
+            error_popup.open()
+            return
+    
+        # Rename the state in the tree data
+        def rename_state(tree, target, new_name):
+            """Recursively rename the state in the tree."""
+            for key, children in list(tree.items()):
+                if key == target:
+                    tree[new_name] = tree.pop(key)  # Rename the key
+                    return True
+                elif children:
+                    if rename_state(children, target, new_name):
+                        return True
+            return False
+    
+        if rename_state(self.tree_data["root"], state_to_rename, new_name):
+            popup.dismiss()
+    
+            # **Redraw the tree after renaming**
+            self.draw_tree()
+    
+            success_popup = Popup(
+                title="Rename Successful",
+                content=Label(text=f"State '{state_to_rename}' has been renamed to '{new_name}'."),
+                size_hint=(0.6, 0.4),
+            )
+            success_popup.open()
+        else:
+            error_popup = Popup(
+                title="Rename Failed",
+                content=Label(text="Failed to rename the selected state."),
+                size_hint=(0.6, 0.4),
+            )
+            error_popup.open()
