@@ -10,9 +10,10 @@ from square_widget import SquareWidget
 from states_identifier import StatesIdentifier
 
 class StateChosenScreen(Screen):
-    def __init__(self, state_name, **kwargs):
+    def __init__(self, state, **kwargs):
         super(StateChosenScreen, self).__init__(**kwargs)
-        self.state_name = state_name
+        self.state = state
+        self.state_name = state.name
         self.inputs = []
 
         layout = FloatLayout()
@@ -104,7 +105,8 @@ class StateChosenScreen(Screen):
         tree_screen = self.manager.get_screen("tree_screen")
 
         data = tree_screen.tree_data
-        target_key = self.state_name
+        # target_key = self.state_name
+        target_key = self.state
 
         def nest_value_in_key(data, target_key, new_value):
             def recursive_search_and_update(data):
@@ -124,7 +126,8 @@ class StateChosenScreen(Screen):
                 data[target_key] = new_value
 
         
-        nest_value_in_key(data["root"], target_key, {leaf.name: {} for leaf in new_leaves})
+        # nest_value_in_key(data["root"], target_key, {leaf.name: {} for leaf in new_leaves})
+        nest_value_in_key(data["root"], target_key, {leaf: {} for leaf in new_leaves})
 
         tree_screen.draw_tree()  
 

@@ -109,8 +109,13 @@ class SquareScreen(Screen):
 
         states_identifier = StatesIdentifier()
         states = states_identifier._idenfity_states(leaves)
+        
+        # root = {
+        #     "root": {state.name: {} for state in states}  
+        # }
+
         root = {
-            "root": {state.name: {} for state in states}  
+            "root": {state:{} for state in states}
         }
 
         if "tree_screen" in self.manager.screen_names:
