@@ -1,5 +1,5 @@
-from .predicate import Predicate
-from .attribute import Attribute
+from predicate import Predicate
+from attribute import Attribute
 
 #NOTE: Klasa definiująca obiekt stanu
 class State:
@@ -9,13 +9,14 @@ class State:
         else:
             self.name = predicate1.name
 
-        self.attributes = {}
-        # self.children = {}
-        # self.parent = None
-
+        self.attributes = []
 
     def add_attribute(self, attribute: Attribute):
         self.attributes.append(attribute)
+
+    def __str__(self):
+        attributes_str = [attribute.__str__() for attribute in self.attributes]
+        return f"{self.name} {attributes_str}"
 
 
     

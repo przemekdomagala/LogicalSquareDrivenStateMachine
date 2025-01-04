@@ -1,8 +1,12 @@
 class Attribute:
-    def __init__(self, type, name, value):
-        self.type = type
+    def __init__(self, name, value):
         self.name = name
         self.value = value
 
+        # if value["kind"] == "Value":
+        #     self.type = str(type(value["value"])).replace('<class \'', '').replace('\'>', '')
+        # else:
+        #     self.type = str(type(1.025)).replace('<class \'', '').replace('\'>', '')
+
     def __str__(self):
-        return f"{self.type} {self.name} {self.value}"
+        return f"{self.name} {self.value}"

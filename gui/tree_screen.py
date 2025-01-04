@@ -12,6 +12,9 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.textinput import TextInput
 from backend.code_generator import CodeGenerator
 from backend.state import State
+from backend.attribute import Attribute
+
+import gui_common as c
 
 class TreeScreen(Screen):
     def __init__(self, tree_data, **kwargs):
@@ -200,11 +203,13 @@ class TreeScreen(Screen):
     def go_next(self, instance):
         """Navigate to the next screen after selecting a state."""
         if not self.selected_leaves:
-            popup = Popup(
-                title="Error",
-                content=Label(text="Please select a state to expand."),
-                size_hint=(0.6, 0.4),
-            )
+            # popup = Popup(
+            #     title="Error",
+            #     content=Label(text="Please select a state to expand."),
+            #     size_hint=(0.6, 0.4),
+            # )
+            # popup.open()
+            popup = c.error_popup("Please select a state to expand.")
             popup.open()
             return
 
@@ -280,8 +285,12 @@ class TreeScreen(Screen):
         confirm_button = Button(text="Confirm", size_hint_x=0.5)
         cancel_button = Button(text="Cancel", size_hint_x=0.5)
 
-        # confirm_button.bind(on_release=lambda x: self.confirm_expand_selection(popup, spinner.text))
-        confirm_button.bind(on_release=lambda x: self.confirm_expand_selection(popup, displayed_leaves[spinner.text]))
+        error_popup = c.error_popup("Please select a state to expand.")
+
+        confirm_button.bind(on_release=lambda x: self.confirm_expand_selection(popup, displayed_leaves[spinner.text]) 
+                            if spinner.text != 'Select state' 
+                            else error_popup.open())
+        
         cancel_button.bind(on_release=lambda x: popup.dismiss())
 
         button_layout.add_widget(confirm_button)
@@ -369,8 +378,12 @@ class TreeScreen(Screen):
         confirm_button = Button(text="Confirm", size_hint_x=0.5)
         cancel_button = Button(text="Cancel", size_hint_x=0.5)
 
-        # confirm_button.bind(on_release=lambda x: self.confirm_rename_selection(popup, spinner.text, rename_input.text))
-        confirm_button.bind(on_release=lambda x: self.confirm_rename_selection(popup, helper_dict[spinner.text], rename_input.text))
+        error_popup = c.error_popup("Please select a state to rename.")
+
+        confirm_button.bind(on_release=lambda x: self.confirm_rename_selection(popup, helper_dict[spinner.text]
+                                                                               if spinner.text != 'Select state' 
+                                                                                else error_popup.open()
+                                                                               , rename_input.text))
         cancel_button.bind(on_release=lambda x: popup.dismiss())
 
         button_layout.add_widget(confirm_button)
@@ -385,13 +398,8 @@ class TreeScreen(Screen):
 
     def confirm_rename_selection(self, popup, state_to_rename, new_name):
         """Handle the renaming process."""
-        if not state_to_rename or state_to_rename == "Select state":
-            error_popup = Popup(
-                title="Invalid Selection",
-                content=Label(text="Please select a state to rename."),
-                size_hint=(0.6, 0.4),
-            )
-            error_popup.open()
+
+        if not state_to_rename:
             return
     
         if not new_name.strip():
@@ -439,10 +447,99 @@ class TreeScreen(Screen):
             error_popup.open()
 
     #region add_attribute_popup
+    # def open_add_attribute_popup(self, instance):
+    #     """Open a popup to add an attribute to a selected state."""
+    #     popup_layout = BoxLayout(orientation="vertical", spacing=10, padding=10, size_hint=(1, None))
+    #     popup_layout.bind(minimum_height=popup_layout.setter('height'))
+    #     # Collect all states available for adding attributes
+    #     def collect_all_states(tree):
+    #         """Recursively collect all states."""
+    #         states = []
+    #         for key, children in tree.items():
+    #             states.append(key)
+    #             if children:
+    #                 states.extend(collect_all_states(children))
+    #         return states
+    #     available_states = collect_all_states(self.tree_data["root"])
+    #     helper_dict = {}
+    #     for i in range(len(available_states)):
+    #         if type(available_states[i]) == str:
+    #             continue
+    #         helper_dict[available_states[i].name] = available_states[i]
+    #         available_states[i] = available_states[i].name
+    #     if not available_states:
+    #         error_popup = Popup(
+    #             title="No States Available",
+    #             content=Label(text="No states available for adding attributes!"),
+    #             size_hint=(0.6, 0.4),
+    #         )
+    #         error_popup.open()
+    #         return
+    #     # Spinner to select the state
+    #     spinner = Spinner(
+    #         text="Select state",
+    #         values=helper_dict.keys(),
+    #         size_hint=(1, None),
+    #         height=40,
+    #     )
+    #     selected_label = Label(
+    #         text="No state selected",
+    #         size_hint=(1, None),
+    #         height=40,
+    #         color=(1, 1, 1, 1),
+    #     )
+    #     def on_spinner_select(spinner, value):
+    #         """Update the label when a selection is made."""
+    #         selected_label.text = f"Selected: {value}"
+    #     spinner.bind(text=on_spinner_select)
+    #     # Text input for the attribute name and value
+    #     attribute_name_input = TextInput(
+    #         hint_text="Enter attribute name",
+    #         multiline=False,
+    #         size_hint=(1, None),
+    #         height=40,
+    #     )
+    #     attribute_value_input = TextInput(
+    #         hint_text="Enter attribute value",
+    #         multiline=False,
+    #         size_hint=(1, None),
+    #         height=40,
+    #     )
+    #     # Popup layout
+    #     popup_layout.add_widget(Label(text="Choose state to add attribute:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+    #     popup_layout.add_widget(spinner)
+    #     popup_layout.add_widget(Label(text="Enter attribute name:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+    #     popup_layout.add_widget(attribute_name_input)
+    #     popup_layout.add_widget(Label(text="Enter attribute value:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+    #     popup_layout.add_widget(attribute_value_input)
+    #     popup_layout.add_widget(selected_label)
+    #     # Buttons for Confirm and Cancel
+    #     button_layout = BoxLayout(orientation="horizontal", size_hint_y=None, height=40, spacing=20)
+    #     confirm_button = Button(text="Confirm", size_hint_x=0.5)
+    #     cancel_button = Button(text="Cancel", size_hint_x=0.5)
+        
+    #     error_popup = c.error_popup("Please select a state to add an attribute.")
+        
+    #     confirm_button.bind(on_release=lambda x: self.confirm_add_attribute(popup, helper_dict[spinner.text]
+    #                                                                         if spinner.text != 'Select state' 
+    #                                                                         else error_popup.open(), 
+    #                                                                         attribute_name_input.text,
+    #                                                                         attribute_value_input.text))
+        
+    #     cancel_button.bind(on_release=lambda x: popup.dismiss())
+    #     button_layout.add_widget(confirm_button)
+    #     button_layout.add_widget(cancel_button)
+    #     main_layout = BoxLayout(orientation="vertical")
+    #     main_layout.add_widget(popup_layout)
+    #     main_layout.add_widget(button_layout)
+    #     popup = Popup(title="Add Attribute", content=main_layout, size_hint=(0.9, 0.9), auto_dismiss=False)
+    #     popup.open()
+    
     def open_add_attribute_popup(self, instance):
         """Open a popup to add an attribute to a selected state."""
-        popup_layout = BoxLayout(orientation="vertical", spacing=10, padding=20, size_hint=(1, None))
+        popup_layout = BoxLayout(orientation="vertical", spacing=10, padding=10, size_hint=(1, None))
         popup_layout.bind(minimum_height=popup_layout.setter('height'))
+    
         # Collect all states available for adding attributes
         def collect_all_states(tree):
             """Recursively collect all states."""
@@ -452,6 +549,7 @@ class TreeScreen(Screen):
                 if children:
                     states.extend(collect_all_states(children))
             return states
+    
         available_states = collect_all_states(self.tree_data["root"])
         helper_dict = {}
         for i in range(len(available_states)):
@@ -459,6 +557,7 @@ class TreeScreen(Screen):
                 continue
             helper_dict[available_states[i].name] = available_states[i]
             available_states[i] = available_states[i].name
+    
         if not available_states:
             error_popup = Popup(
                 title="No States Available",
@@ -467,6 +566,7 @@ class TreeScreen(Screen):
             )
             error_popup.open()
             return
+    
         # Spinner to select the state
         spinner = Spinner(
             text="Select state",
@@ -484,49 +584,131 @@ class TreeScreen(Screen):
             """Update the label when a selection is made."""
             selected_label.text = f"Selected: {value}"
         spinner.bind(text=on_spinner_select)
-        # Text input for the attribute name and value
+    
+        # Input for attribute name
         attribute_name_input = TextInput(
             hint_text="Enter attribute name",
             multiline=False,
             size_hint=(1, None),
             height=40,
         )
+    
+        # Spinner to choose attribute type
+        attribute_type_spinner = Spinner(
+            text="Select attribute type",
+            values=["Value", "Range"],
+            size_hint=(1, None),
+            height=40,
+        )
+        
+        # Dynamic layout for attribute input
+        attribute_input_layout = BoxLayout(orientation="vertical", size_hint=(1, None))
+    
+        # Inputs for value
         attribute_value_input = TextInput(
             hint_text="Enter attribute value",
             multiline=False,
             size_hint=(1, None),
             height=40,
         )
+    
+        # Inputs for range
+        range_start_input = TextInput(
+            hint_text="Enter range start",
+            multiline=False,
+            size_hint=(1, None),
+            height=40,
+        )
+        range_end_input = TextInput(
+            hint_text="Enter range end",
+            multiline=False,
+            size_hint=(1, None),
+            height=40,
+        )
+        range_bound_spinner = Spinner(
+            text="Select range bound type",
+            values=["Closed", "Open Start", "Open End", "Open Both"],
+            size_hint=(1, None),
+            height=40,
+        )
+    
+        # Function to toggle inputs based on selected type
+        def update_attribute_inputs(spinner, value):
+            attribute_input_layout.clear_widgets()
+            if value == "Value":
+                attribute_input_layout.add_widget(attribute_value_input)
+            elif value == "Range":
+                attribute_input_layout.add_widget(range_start_input)
+                attribute_input_layout.add_widget(range_end_input)
+                attribute_input_layout.add_widget(range_bound_spinner)
+    
+        attribute_type_spinner.bind(text=update_attribute_inputs)
+    
+        # Initial setup
+        attribute_input_layout.add_widget(attribute_value_input)
+    
         # Popup layout
         popup_layout.add_widget(Label(text="Choose state to add attribute:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
         popup_layout.add_widget(spinner)
         popup_layout.add_widget(Label(text="Enter attribute name:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
         popup_layout.add_widget(attribute_name_input)
-        popup_layout.add_widget(Label(text="Enter attribute value:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
-        popup_layout.add_widget(attribute_value_input)
+        popup_layout.add_widget(Label(text="Select attribute type:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+        popup_layout.add_widget(attribute_type_spinner)
+        popup_layout.add_widget(attribute_input_layout)
         popup_layout.add_widget(selected_label)
+    
         # Buttons for Confirm and Cancel
         button_layout = BoxLayout(orientation="horizontal", size_hint_y=None, height=40, spacing=20)
         confirm_button = Button(text="Confirm", size_hint_x=0.5)
         cancel_button = Button(text="Cancel", size_hint_x=0.5)
-        confirm_button.bind(on_release=lambda x: self.confirm_add_attribute(popup, helper_dict[spinner.text], attribute_name_input.text, attribute_value_input.text))
+    
+        error_popup = c.error_popup("Please select a state to add an attribute.")
+    
+        def confirm_action(instance):
+            if spinner.text == 'Select state':
+                error_popup.open()
+                return
+            state = helper_dict[spinner.text]
+            attribute_name = attribute_name_input.text
+            if not attribute_name:
+                error_popup.content = Label(text="Please enter an attribute name!")
+                error_popup.open()
+                return
+            if attribute_type_spinner.text == "Value":
+                value = attribute_value_input.text
+                self.confirm_add_attribute(popup, state, attribute_name, {"kind": "Value", "value": value})
+            elif attribute_type_spinner.text == "Range":
+                start = range_start_input.text
+                end = range_end_input.text
+                bound_type = range_bound_spinner.text
+                self.confirm_add_attribute(popup, state, attribute_name, {
+                    "kind": "Range",
+                    "start": start,
+                    "end": end,
+                    "bound_type": bound_type
+                })
+    
+        confirm_button.bind(on_release=confirm_action)
         cancel_button.bind(on_release=lambda x: popup.dismiss())
+    
         button_layout.add_widget(confirm_button)
         button_layout.add_widget(cancel_button)
+    
         main_layout = BoxLayout(orientation="vertical")
         main_layout.add_widget(popup_layout)
         main_layout.add_widget(button_layout)
-        popup = Popup(title="Add Attribute", content=main_layout, size_hint=(0.8, 0.6), auto_dismiss=False)
+    
+        popup = Popup(title="Add Attribute", content=main_layout, size_hint=(0.95, 0.95), auto_dismiss=False)
         popup.open()
+
+    
     def confirm_add_attribute(self, popup, state, attribute_name, attribute_value):
         """Handle the process of adding an attribute to a state."""
+        isValue = attribute_value["kind"] == "Value"
+        
+        if isValue: attribute_value = attribute_value["value"]
+        
         if not state or state == "Select state":
-            error_popup = Popup(
-                title="Invalid Selection",
-                content=Label(text="Please select a state to add an attribute."),
-                size_hint=(0.6, 0.4),
-            )
-            error_popup.open()
             return
         if not attribute_name.strip():
             error_popup = Popup(
@@ -536,23 +718,53 @@ class TreeScreen(Screen):
             )
             error_popup.open()
             return
-        # Add the attribute to the state
-        state.attributes[attribute_name] = attribute_value
-        
-        # try:
-        #     # Check for boolean
-        #     if value.lower() in ['true', 'false']:
-        #         return bool(value.lower() == 'true')
-        #     # Check for integer
-        #     if value.isdigit() or (value.startswith('-') and value[1:].isdigit()):
-        #         return int(value)
-        #     # Check for float
-        #     float(value)  # If this doesn't raise an error, it's a float
-        #     return float(value)
-        # except ValueError:
-        #     # If all conversions fail, it's a string
-        #     return value
+        if isValue and not attribute_value.strip():
+            error_popup = Popup(
+                title="Invalid Attribute Value",
+                content=Label(text="Attribute value cannot be empty."),
+                size_hint=(0.6, 0.4),
+            )
+            error_popup.open()
+            return
+        elif isValue and attribute_value.strip():
+            try:
+            # Check for boolean
+                if attribute_value.lower() in ['true', 'false']:
+                    attribute_value = bool(attribute_value.lower() == 'true')
+                # Check for integer
+                if attribute_value.isdigit() or (attribute_value.startswith('-') and attribute_value[1:].isdigit()):
+                    attribute_value = int(attribute_value)
+                # Check for float
+                elif float(attribute_value):  # If this doesn't raise an error, it's a float
+                    attribute_value = float(attribute_value)
+            except ValueError:
+                attribute_value = str(attribute_value)    
+        elif not isValue:
+            if not attribute_value["start"].strip():
+                attribute_value["start"] = float("-inf")
+            else:
+                try:
+                    attribute_value["start"] = float(attribute_value["start"])
+                except ValueError:
+                    error_popup = c.error_popup("Invalid range start value.")
+                    error_popup.open()
+                    return
+            if not attribute_value["end"].strip():
+                attribute_value["end"] = float("inf")
+            else:
+                try:
+                    attribute_value["end"] = float(attribute_value["end"])
+                except ValueError:
+                    error_popup = c.error_popup("Invalid range end value.")
+                    error_popup.open()
+                    return
 
+            if attribute_value["start"] > attribute_value["end"]:
+                error_popup = c.error_popup("Range start value cannot be greater than range end value.")
+                error_popup.open()
+
+        # Add the attribute to the state
+        state.add_attribute(Attribute(attribute_name, attribute_value))
 
         popup.dismiss()
         # Redraw the tree after adding the attribute
