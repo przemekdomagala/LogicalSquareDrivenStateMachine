@@ -6,13 +6,12 @@ from kivy.graphics import Line, Color, Rectangle
 from kivy.uix.widget import Widget
 from kivy.uix.popup import Popup
 from kivy.uix.floatlayout import FloatLayout
-from generate_code_screen import GenerateCodeScreen
 from state_chosen_screen import StateChosenScreen
 from kivy.uix.spinner import Spinner
 from kivy.uix.textinput import TextInput
-from backend.code_generator import CodeGenerator
-from backend.state import State
 from backend.attribute import Attribute
+from gui.tree_screen_navigation import go_next, go_back, go_to_generate_code
+from backend.prover_input_generator import check_disjointness
 
 import gui_common as c
 
@@ -51,7 +50,7 @@ class TreeScreen(Screen):
             background_color=(0.8, 0.1, 0.1, 1),
             color=(1, 1, 1, 1),
         )
-        back_button.bind(on_release=self.go_back)
+        back_button.bind(on_release=go_back)
         button_layout.add_widget(back_button)
 
         self.expand_button = Button(
@@ -85,13 +84,22 @@ class TreeScreen(Screen):
         self.add_attribute_button.bind(on_release=self.open_add_attribute_popup)
         button_layout.add_widget(self.add_attribute_button)
 
+        prover_button = Button(
+            text="Prover",
+            size_hint=(0.3, 1),
+            background_color=(0.5, 0.5, 0.5, 1),
+            color=(1, 1, 1, 1)
+        )
+        prover_button.bind(on_release=self.open_prover_popup)
+        button_layout.add_widget(prover_button)
+
         next_button = Button(
             text="Next",
             size_hint=(0.3, 1),
             background_color=(0.1, 0.8, 0.1, 1),
             color=(1, 1, 1, 1),
         )
-        next_button.bind(on_release=self.go_next)
+        next_button.bind(on_release=go_next)
         button_layout.add_widget(next_button)
 
         generate_code_button = Button(
@@ -100,7 +108,7 @@ class TreeScreen(Screen):
             background_color=(0.8, 0.6, 0.2, 1),
             color=(1, 1, 1, 1),
         )
-        generate_code_button.bind(on_release=self.go_to_generate_code)
+        generate_code_button.bind(on_release=go_to_generate_code)
         button_layout.add_widget(generate_code_button)
 
 
@@ -108,13 +116,7 @@ class TreeScreen(Screen):
         layout.add_widget(button_layout)
         self.add_widget(layout)
 
-    def go_to_generate_code(self, instance):
-        """Navigate to the GenerateCodeScreen."""
-        if "generate_code" not in self.manager.screen_names:
-            self.manager.add_widget(GenerateCodeScreen(name="generate_code"))
-        self.manager.current = "generate_code"
-        code_generator = CodeGenerator()
-        code_generator.generate_code(self.tree_data)
+
 
     #region drawtree
     def draw_tree(self, *args):
@@ -135,15 +137,6 @@ class TreeScreen(Screen):
                 num_children = len(children)
                 child_spacing = screen_width / (num_children + 1)
                 child_y = parent_y - screen_height * 0.2  
-
-                # for i, (child_name, grand_children) in enumerate(children.items()):
-                #     child_x = (i + 1) * child_spacing
-                #     color = (0.2, 0.8, 0.2, 1) if child_name in self.selected_leaves else (0.2, 0.6, 0.8, 1)
-                #     self.draw_circle(child_x, child_y, 50, child_name, color)
-
-                #     Line(points=[parent_x, parent_y - 50, child_x, child_y + 50], width=2)
-
-                #     draw_children(child_x, child_y, grand_children, level + 1)
                 
                 for i, (child, grand_children) in enumerate(children.items()):
                     child_x = (i + 1) * child_spacing
@@ -196,22 +189,6 @@ class TreeScreen(Screen):
         popup.dismiss()
         self.draw_tree()
 
-
-    def go_back(self, instance):
-        self.manager.current = "square_screen"
-
-    def go_next(self, instance):
-        """Navigate to the next screen after selecting a state."""
-        if not self.selected_leaves:
-            # popup = Popup(
-            #     title="Error",
-            #     content=Label(text="Please select a state to expand."),
-            #     size_hint=(0.6, 0.4),
-            # )
-            # popup.open()
-            popup = c.error_popup("Please select a state to expand.")
-            popup.open()
-            return
 
         selected_state = self.selected_leaves[0] 
         # state_screen = StateChosenScreen(state_name=selected_state.name, name="state_chosen")
@@ -445,95 +422,6 @@ class TreeScreen(Screen):
                 size_hint=(0.6, 0.4),
             )
             error_popup.open()
-
-    #region add_attribute_popup
-    # def open_add_attribute_popup(self, instance):
-    #     """Open a popup to add an attribute to a selected state."""
-    #     popup_layout = BoxLayout(orientation="vertical", spacing=10, padding=10, size_hint=(1, None))
-    #     popup_layout.bind(minimum_height=popup_layout.setter('height'))
-    #     # Collect all states available for adding attributes
-    #     def collect_all_states(tree):
-    #         """Recursively collect all states."""
-    #         states = []
-    #         for key, children in tree.items():
-    #             states.append(key)
-    #             if children:
-    #                 states.extend(collect_all_states(children))
-    #         return states
-    #     available_states = collect_all_states(self.tree_data["root"])
-    #     helper_dict = {}
-    #     for i in range(len(available_states)):
-    #         if type(available_states[i]) == str:
-    #             continue
-    #         helper_dict[available_states[i].name] = available_states[i]
-    #         available_states[i] = available_states[i].name
-    #     if not available_states:
-    #         error_popup = Popup(
-    #             title="No States Available",
-    #             content=Label(text="No states available for adding attributes!"),
-    #             size_hint=(0.6, 0.4),
-    #         )
-    #         error_popup.open()
-    #         return
-    #     # Spinner to select the state
-    #     spinner = Spinner(
-    #         text="Select state",
-    #         values=helper_dict.keys(),
-    #         size_hint=(1, None),
-    #         height=40,
-    #     )
-    #     selected_label = Label(
-    #         text="No state selected",
-    #         size_hint=(1, None),
-    #         height=40,
-    #         color=(1, 1, 1, 1),
-    #     )
-    #     def on_spinner_select(spinner, value):
-    #         """Update the label when a selection is made."""
-    #         selected_label.text = f"Selected: {value}"
-    #     spinner.bind(text=on_spinner_select)
-    #     # Text input for the attribute name and value
-    #     attribute_name_input = TextInput(
-    #         hint_text="Enter attribute name",
-    #         multiline=False,
-    #         size_hint=(1, None),
-    #         height=40,
-    #     )
-    #     attribute_value_input = TextInput(
-    #         hint_text="Enter attribute value",
-    #         multiline=False,
-    #         size_hint=(1, None),
-    #         height=40,
-    #     )
-    #     # Popup layout
-    #     popup_layout.add_widget(Label(text="Choose state to add attribute:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
-    #     popup_layout.add_widget(spinner)
-    #     popup_layout.add_widget(Label(text="Enter attribute name:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
-    #     popup_layout.add_widget(attribute_name_input)
-    #     popup_layout.add_widget(Label(text="Enter attribute value:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
-    #     popup_layout.add_widget(attribute_value_input)
-    #     popup_layout.add_widget(selected_label)
-    #     # Buttons for Confirm and Cancel
-    #     button_layout = BoxLayout(orientation="horizontal", size_hint_y=None, height=40, spacing=20)
-    #     confirm_button = Button(text="Confirm", size_hint_x=0.5)
-    #     cancel_button = Button(text="Cancel", size_hint_x=0.5)
-        
-    #     error_popup = c.error_popup("Please select a state to add an attribute.")
-        
-    #     confirm_button.bind(on_release=lambda x: self.confirm_add_attribute(popup, helper_dict[spinner.text]
-    #                                                                         if spinner.text != 'Select state' 
-    #                                                                         else error_popup.open(), 
-    #                                                                         attribute_name_input.text,
-    #                                                                         attribute_value_input.text))
-        
-    #     cancel_button.bind(on_release=lambda x: popup.dismiss())
-    #     button_layout.add_widget(confirm_button)
-    #     button_layout.add_widget(cancel_button)
-    #     main_layout = BoxLayout(orientation="vertical")
-    #     main_layout.add_widget(popup_layout)
-    #     main_layout.add_widget(button_layout)
-    #     popup = Popup(title="Add Attribute", content=main_layout, size_hint=(0.9, 0.9), auto_dismiss=False)
-    #     popup.open()
     
     def open_add_attribute_popup(self, instance):
         """Open a popup to add an attribute to a selected state."""
@@ -705,8 +593,9 @@ class TreeScreen(Screen):
     def confirm_add_attribute(self, popup, state, attribute_name, attribute_value):
         """Handle the process of adding an attribute to a state."""
         isValue = attribute_value["kind"] == "Value"
-        
-        if isValue: attribute_value = attribute_value["value"]
+        initial_value = attribute_value
+        if isValue: 
+            attribute_value = attribute_value["value"]
         
         if not state or state == "Select state":
             return
@@ -764,7 +653,7 @@ class TreeScreen(Screen):
                 error_popup.open()
 
         # Add the attribute to the state
-        state.add_attribute(Attribute(attribute_name, attribute_value))
+        state.add_attribute(Attribute(attribute_name, initial_value))
 
         popup.dismiss()
         # Redraw the tree after adding the attribute
@@ -775,3 +664,109 @@ class TreeScreen(Screen):
             size_hint=(0.6, 0.4),
         )
         success_popup.open()
+
+    def open_prover_popup(self, instance):
+        """Open a popup for the prover functionality."""
+        def has_attributes(tree):
+            """Recursively check if any state in the tree has attributes."""
+            for key, children in tree.items():
+                if key.attributes:
+                    return True
+                if children and has_attributes(children):
+                    return True
+            return False
+
+        if not has_attributes(self.tree_data["root"]):
+            error_popup = Popup(
+                title="No Attributes Found",
+                content=Label(text="No states with attributes found in the tree."),
+                size_hint=(0.6, 0.4),
+            )
+            error_popup.open()
+            return
+
+        # Popup layout
+        popup_layout = BoxLayout(orientation="vertical", spacing=10, padding=20, size_hint=(1, None))
+        popup_layout.bind(minimum_height=popup_layout.setter('height'))
+
+        prover_spinner = Spinner(
+            text="Select prover",
+            values=["z3", "vampire"],
+            size_hint=(1, None),
+            height=40,
+        )
+
+        selected_label = Label(
+            text="No prover selected",
+            size_hint=(1, None),
+            height=40,
+            color=(1, 1, 1, 1),
+        )
+
+        def on_spinner_select(spinner, value):
+            """Update the label when a selection is made."""
+            selected_label.text = f"Selected: {value}"
+
+        prover_spinner.bind(text=on_spinner_select)
+
+        popup_layout.add_widget(Label(text="Choose prover:", size_hint=(1, None), height=40, color=(1, 1, 1, 1)))
+        popup_layout.add_widget(prover_spinner)
+        popup_layout.add_widget(selected_label)
+
+        button_layout = BoxLayout(orientation="horizontal", size_hint_y=None, height=40, spacing=20)
+        check_button = Button(text="Check", size_hint_x=0.5)
+        cancel_button = Button(text="Cancel", size_hint_x=0.5)
+
+        def check_action(instance):
+            if prover_spinner.text == 'Select prover':
+                error_popup = Popup(
+                    title="No Prover Selected",
+                    content=Label(text="Please select a prover."),
+                    size_hint=(0.6, 0.4),
+                )
+                error_popup.open()
+                return
+            elif prover_spinner.text == 'vampire':
+                error_popup = Popup(
+                    title="Not Implemented",
+                    content=Label(text="Vampire prover is not implemented yet."),
+                    size_hint=(0.6, 0.4),
+                )
+                error_popup.open()
+                return
+            elif prover_spinner.text == 'z3':
+                states = self.collect_all_states_with_attributes(self.tree_data["root"])
+                result = check_disjointness(states)
+                self.display_prover_result(result)
+
+        check_button.bind(on_release=check_action)
+        cancel_button.bind(on_release=lambda x: popup.dismiss())
+
+        button_layout.add_widget(check_button)
+        button_layout.add_widget(cancel_button)
+
+        main_layout = BoxLayout(orientation="vertical")
+        main_layout.add_widget(popup_layout)
+        main_layout.add_widget(button_layout)
+
+        popup = Popup(title="Prover", content=main_layout, size_hint=(0.8, 0.6), auto_dismiss=False)
+        popup.open()
+
+    def display_prover_result(self, result):
+        """Display the result of the prover on the screen."""
+        result_popup = Popup(
+            title="Prover Result",
+            content=Label(text=f"Prover Result: {result}"),
+            size_hint=(0.6, 0.4),
+        )
+        result_popup.open()
+
+    def collect_all_states_with_attributes(self, tree):
+        """Recursively collect all states with attributes."""
+        states = []
+        for key, children in tree.items():
+            if key.attributes:
+                states.append(key)
+            if children:
+                states.extend(self.collect_all_states_with_attributes(children))
+        return states
