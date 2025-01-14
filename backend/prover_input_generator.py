@@ -84,20 +84,17 @@ def check_disjointness(states):
     solver = Solver()
     n = len(prove_states)
     disjoint = True
-    # Iterate over all pairs of states
     for i in range(n):
         for j in range(i + 1, n):
-            # Check overlap between states[i] and states[j]
             overlap_query = And(prove_states[i], prove_states[j])
-            solver.push()  # Save the current solver state
+            solver.push() 
             solver.add(overlap_query)
             if solver.check() == sat:
-                # If satisfiable, states overlap
                 disjoint = False
                 print(f"States {i+1} and {j+1} are not disjoint.")
                 print("Example of overlapping values:")
                 print(solver.model())
-            solver.pop()  # Restore the solver state
+            solver.pop()  
     if disjoint:
         print("All states are disjoint.")
     else:

@@ -1,5 +1,5 @@
-from predicate import Predicate
-from attribute import Attribute
+from .predicate import Predicate
+from .attribute import Attribute
 
 #NOTE: Klasa definiująca obiekt stanu
 class State:
