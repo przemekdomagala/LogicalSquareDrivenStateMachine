@@ -116,9 +116,25 @@ class SMScreen(Screen):
 
         popup.open()
 
-    def add_transition(self, source, destination, popup):
+    def add_transition(self, source, destination, event, guard, action, popup):
+        if not event:
+            # Show an error message if the event is empty
+            error_popup = Popup(title='Error', content=Label(text='Event is required'), size_hint=(0.6, 0.4))
+            error_popup.open()
+            return
+
+        stejts = self.collect_all_states_objects(self.tree_data)
+        source_ = next((state for state in stejts if state.name == source), None)
+        destination_ = next((state for state in stejts if state.name == destination), None)
+
         if source in self.collect_all_states(self.tree_data) and destination in self.collect_all_states(self.tree_data):
-            self.transitions.append({'from': source, 'to': destination})
+            self.transitions.append({
+                'from': source_, 
+                'to': destination_, 
+                'event': event, 
+                'guard': guard, 
+                'action': action
+            })
             popup.dismiss()
         # Logic to update the drawing area with the new transition
         self.draw_states()
@@ -131,7 +147,7 @@ class SMScreen(Screen):
         self.state_positions.clear()
         with self.drawing_area.canvas:
             Color(1, 1, 1, 1)
-            self.draw_tree(self.tree_data, self.width / 2, self.height / 2, self.width / 4)
+            self.draw_tree(self.tree_data, self.width / 2, self.height / 2 + 125, self.width / 4)
             self.draw_transitions()
 
     def draw_tree(self, tree, x, y, spacing):
@@ -146,7 +162,7 @@ class SMScreen(Screen):
     def draw_state(self, x, y, state):
         radius = 50
         Color(0.2, 0.6, 0.8, 1)
-        Line(circle=(x, y, radius), width=2)
+        Line(circle=(x, y, radius-15), width=2)
         label = Label(
             text=str(state),  # Ensure state is a string
             font_size=20,
@@ -164,8 +180,8 @@ class SMScreen(Screen):
 
     def draw_transitions(self):
         for transition in self.transitions:
-            source_pos = self.state_positions.get(transition['from'])
-            dest_pos = self.state_positions.get(transition['to'])
+            source_pos = self.state_positions.get(transition['from'].name)
+            dest_pos = self.state_positions.get(transition['to'].name)
             if source_pos and dest_pos:
                 self.draw_arrow(source_pos, dest_pos)
 
@@ -212,6 +228,15 @@ class SMScreen(Screen):
             if children:
                 states.extend(self.collect_all_states(children))
         return states
+    
+    def collect_all_states_objects(self, tree):
+        """Recursively collect all states."""
+        states = []
+        for key, children in tree.items():
+            if key != 'root': states.append(key)
+            if children:
+                states.extend(self.collect_all_states_objects(children))
+        return states
 
     def open_check_attributes_popup(self, instance):
         content = FloatLayout()
@@ -239,12 +264,17 @@ class SMScreen(Screen):
 
     def show_state_attributes(self, state_name):
         state = self.find_state_by_name(state_name)
+        attributes_str = ''
         if state:
-            # attributes = state.attributes
-            # attributes_str = "\n".join([str(attr) for attr in attributes])
-            for attr in state.attributes:
-                attributes_str = attr.name + " = " + attr.value['value']
-                # attributes_str = state.attributes[0]['name']+" "+state.attributes[0].value['value']
+            if state.attributes:
+                for attr in state.attributes:
+                    # if attr.value["kind"] == "Value":
+                    #     attributes_str = attr.name + " = " + attr.value['value'] + '\n'
+                    # else:
+                    #     attributes_str = str(attr.value) + '\n'
+                    attributes_str += str(attr) + '\n'
+            else:
+                attributes_str = "State has no attributes"
             content = Label(text=attributes_str)
             popup = Popup(title=f'Attributes of {state_name}', content=content, size_hint=(0.8, 0.5))
             popup.open()
