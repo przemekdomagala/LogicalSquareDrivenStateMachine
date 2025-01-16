@@ -6,6 +6,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.popup import Popup
 from kivy.uix.spinner import Spinner
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.textinput import TextInput
 from kivy.graphics import Line, Color, Rectangle
 import math
 
@@ -53,7 +54,8 @@ class SMScreen(Screen):
 
     def on_enter(self):
         self.draw_states()
-
+        
+        
     def open_add_transition_popup(self, instance):
         content = FloatLayout()
 
@@ -63,7 +65,7 @@ class SMScreen(Screen):
             text='Select Source State',
             values=all_states,
             size_hint=(0.8, 0.1),
-            pos_hint={'x': 0.1, 'y': 0.6}
+            pos_hint={'x': 0.1, 'y': 0.8}
         )
         content.add_widget(source_spinner)
 
@@ -71,17 +73,45 @@ class SMScreen(Screen):
             text='Select Destination State',
             values=all_states,
             size_hint=(0.8, 0.1),
-            pos_hint={'x': 0.1, 'y': 0.4}
+            pos_hint={'x': 0.1, 'y': 0.7}
         )
         content.add_widget(destination_spinner)
+
+        event_input = TextInput(
+            hint_text='Event',
+            size_hint=(0.8, 0.1),
+            pos_hint={'x': 0.1, 'y': 0.6}
+        )
+        content.add_widget(event_input)
+
+        guard_input = TextInput(
+            hint_text='Guard (optional)',
+            size_hint=(0.8, 0.1),
+            pos_hint={'x': 0.1, 'y': 0.5}
+        )
+        content.add_widget(guard_input)
+
+        action_input = TextInput(
+            hint_text='Action (optional)',
+            size_hint=(0.8, 0.1),
+            pos_hint={'x': 0.1, 'y': 0.4}
+        )
+        content.add_widget(action_input)
 
         add_button = Button(
             text='Add Transition',
             size_hint=(0.8, 0.1),
             pos_hint={'x': 0.1, 'y': 0.2}
         )
-        popup = Popup(title='Add Transition', content=content, size_hint=(0.8, 0.5))
-        add_button.bind(on_release=lambda x: self.add_transition(source_spinner.text, destination_spinner.text, popup))
+        popup = Popup(title='Add Transition', content=content, size_hint=(0.8, 0.7))
+        add_button.bind(on_release=lambda x: self.add_transition(
+            source_spinner.text, 
+            destination_spinner.text, 
+            event_input.text, 
+            guard_input.text, 
+            action_input.text, 
+            popup
+        ))
         content.add_widget(add_button)
 
         popup.open()
