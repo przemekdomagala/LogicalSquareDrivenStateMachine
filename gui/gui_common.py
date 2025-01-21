@@ -1,6 +1,8 @@
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 
+chosen_language = ""
+
 def error_popup(text):
     return Popup(
         title="Error",

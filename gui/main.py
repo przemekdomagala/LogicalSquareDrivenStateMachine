@@ -16,3 +16,23 @@ class MainApp(App):
 
 if __name__ == "__main__":
     MainApp().run()
+
+'''
+- Stany, z atrybutami
+- Przejścia, event, guard, action
+'''
+
+# SM:
+#     curr_state = 1a
+
+#     def run():
+#         for transition in transitions:
+#             if (curr_state = transition['from']):
+#                 if(transition['guard']()):
+#                     transition['action']()
+#                     curr_state = transition['to']\
+                    
+#     bool handle_event();
+#         if costam:
+#             True
+#         false 

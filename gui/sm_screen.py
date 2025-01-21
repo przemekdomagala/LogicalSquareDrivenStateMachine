@@ -11,11 +11,13 @@ from kivy.graphics import Line, Color, Rectangle
 import math
 
 class SMScreen(Screen):
-    def __init__(self, tree_data, **kwargs):
+    def __init__(self, tree_data, tree_screen, **kwargs):
         super(SMScreen, self).__init__(**kwargs)
         self.tree_data = tree_data
         self.transitions = []
         self.state_positions = {}
+
+        self.tree_screen = tree_screen
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
 
@@ -141,6 +143,7 @@ class SMScreen(Screen):
 
     def go_back(self, instance):
         self.manager.current = 'tree_screen'
+        self.tree_screen.transitions = self.transitions 
 
     def draw_states(self, *args):
         self.drawing_area.canvas.clear()

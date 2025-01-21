@@ -26,6 +26,8 @@ class TreeScreen(Screen):
         self.expanded_states = []  
         self.states = []
 
+        self.transitions = []
+
         layout = FloatLayout()
 
         background = Widget()
@@ -114,7 +116,7 @@ class TreeScreen(Screen):
 
     def go_to_sm_screen(self, instance):
         if "sm_screen" not in self.manager.screen_names:
-            self.manager.add_widget(SMScreen(tree_data=self.tree_data, name="sm_screen"))
+            self.manager.add_widget(SMScreen(tree_data=self.tree_data, tree_screen=self, name="sm_screen"))
         self.manager.current = 'sm_screen'
 
     #region drawtree
@@ -783,7 +785,5 @@ class TreeScreen(Screen):
     def go_to_generate_code(self, instance):
         """Navigate to the GenerateCodeScreen."""
         if "generate_code" not in self.manager.screen_names:
-            self.manager.add_widget(GenerateCodeScreen(name="generate_code"))
+            self.manager.add_widget(GenerateCodeScreen(state_machine=self.tree_data, transitions=self.transitions, name="generate_code"))
         self.manager.current = "generate_code"
-        code_generator = CodeGenerator()
-        code_generator.generate_code(self.tree_data)

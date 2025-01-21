@@ -4,6 +4,10 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
+import gui_common as c
+
+# Global variable to store the selected language
+# selected_language = None
 
 class LanguageSelectionScreen(Screen):
     def __init__(self, **kwargs):
@@ -18,9 +22,11 @@ class LanguageSelectionScreen(Screen):
         )
         layout.add_widget(label)
 
+        self.selected_language = ""
+
         self.dropdown = DropDown()
 
-        for lang in ["Python"]:
+        for lang in ["Python", "Java"]:
             btn = Button(
                 text=lang, size_hint_y=None, height=50, background_color=(0.2, 0.6, 0.8, 1)
             )
@@ -50,11 +56,17 @@ class LanguageSelectionScreen(Screen):
 
         self.add_widget(layout)
 
-    def update_button_text(self, instance, selected_language):
-        self.language_button.text = selected_language
+    def update_button_text(self, instance, selected_lang):
+        self.language_button.text = selected_lang
+        # global selected_language  # Update the global variable
+        selected_language = selected_lang
 
     def go_to_next(self, instance):
         if self.language_button.text != "Choose here...":
+            # global selected_language  # Update the global variable
+            # selected_language = self.language_button.text
+            c.chosen_language = self.language_button.text
+            self.selected_language = self.language_button.text
             self.manager.current = "square_screen"
         else:
             error_popup = Popup(
@@ -64,3 +76,6 @@ class LanguageSelectionScreen(Screen):
             )
             error_popup.open()
 
+    # def get_selected_language(self):
+        # print("Wybrany jezyk: "+selected_language)
+        # return self.selected_language

@@ -5,10 +5,17 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
+from backend.code_generator import CodeGenerator
+import gui_common as c
 
 class GenerateCodeScreen(Screen):
-    def __init__(self, **kwargs):
+    def __init__(self, state_machine, transitions, **kwargs):
         super(GenerateCodeScreen, self).__init__(**kwargs)
+
+        self.state_machine = state_machine
+        self.transitions = transitions
+
+        self.lang_ = c.chosen_language
 
         layout = BoxLayout(orientation="vertical", padding=20, spacing=10)
 
@@ -38,9 +45,18 @@ class GenerateCodeScreen(Screen):
         self.manager.current = "tree_screen"  
 
     def generate_code(self, instance):
+        code_generator = CodeGenerator(self.state_machine, self.transitions)
+        
+        # Use the selected_language variable
+        code_generator.generate_code(language=self.lang_)
+        
         popup = Popup(
             title="Code Generated",
-            content=Label(text="Your code has been generated!"),
+            content=Label(text=f"Your code has been generated in {self.lang_}!"),
             size_hint=(0.6, 0.4),
         )
         popup.open()
+
+    def get_states_and_transitions(self, states, transitions):
+        self.states = states
+        self.transitions = transitions
