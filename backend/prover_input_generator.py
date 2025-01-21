@@ -1,7 +1,7 @@
 from z3 import *
-from state import State
-from predicate import Predicate
-from attribute import Attribute
+from .state import State
+from .predicate import Predicate
+from .attribute import Attribute
 
 def prepare_states(states, variables):
     for state in states:
@@ -70,20 +70,10 @@ def check_disjointness(states):
     for state in states:
         prove_states.append(And(prepare_conditions(variables, state)))
 
-    # conditions_arr = [create_cond('velocity', 20.0001, 'greater'), create_cond('weight', 15), create_cond('error_message', "Velocity must be greater than 20 and weight must be 15")]
-    # my_state = And(conditions_arr)
-
-    # conditions_arr_2 = [create_cond('velocity', 20.0002, 'less'), create_cond('height', 120), create_cond('is_my', False), create_cond('error_message', "Velocity must be greater than 20 and weight must be 15")]
-    
-    # # my_state = And(condition, variables['weight'] == 15.0,variables['error_message'] == "Velocity must be greater than 20 and weight must be 15")
-    # not_my_state = And(conditions_arr_2)
-
-    
-    # states = [my_state, not_my_state]
-
     solver = Solver()
     n = len(prove_states)
     disjoint = True
+    result_str = ""
     for i in range(n):
         for j in range(i + 1, n):
             overlap_query = And(prove_states[i], prove_states[j])
@@ -91,14 +81,20 @@ def check_disjointness(states):
             solver.add(overlap_query)
             if solver.check() == sat:
                 disjoint = False
-                print(f"States {i+1} and {j+1} are not disjoint.")
+                result_str += f"States {states[i].name} and {states[j].name} are not disjoint\n"
+                result_str += "Example of overlapping values:\n"
+                result_str += str(solver.model())+'\n'
+                print(f"States {states[i].name} and {states[j].name} are not disjoint.")
                 print("Example of overlapping values:")
                 print(solver.model())
             solver.pop()  
     if disjoint:
+        result_str += "All states are disjoint."
         print("All states are disjoint.")
     else:
+        result_str += "Some states overlap."
         print("Some states overlap.")
+    return result_str
 
 if __name__ == "__main__":
     state1 = State(Predicate("state1"))

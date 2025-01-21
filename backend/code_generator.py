@@ -1,9 +1,11 @@
 class CodeGenerator:
     def __init__(self):
         self.code = ""
+        self.states = {}
     
     def generate_code(self, graph):
         self.print_nested_dict(graph)
+        self.states = graph
 
     def print_nested_dict(self, d, indent=0):
         for key, value in d.items():
