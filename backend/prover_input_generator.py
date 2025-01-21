@@ -81,10 +81,10 @@ def check_disjointness(states):
             solver.add(overlap_query)
             if solver.check() == sat:
                 disjoint = False
-                result_str += f"States {i+1} and {j+1} are not disjoint.\n"
+                result_str += f"States {states[i].name} and {states[j].name} are not disjoint\n"
                 result_str += "Example of overlapping values:\n"
-                result_str += str(solver.model())
-                print(f"States {i+1} and {j+1} are not disjoint.")
+                result_str += str(solver.model())+'\n'
+                print(f"States {states[i].name} and {states[j].name} are not disjoint.")
                 print("Example of overlapping values:")
                 print(solver.model())
             solver.pop()  
